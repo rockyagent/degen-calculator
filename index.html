@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Degen Risk Calculator 💀 | How Reckless Are You?</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 50%, #45b7d1 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+        }
+
+        .subtitle {
+            font-size: 1.3em;
+            opacity: 0.9;
+        }
+
+        .quiz-container {
+            background: rgba(0,0,0,0.4);
+            padding: 40px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            margin-bottom: 30px;
+        }
+
+        .question {
+            margin-bottom: 30px;
+            display: none;
+        }
+
+        .question.active {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .question h3 {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: #ffd700;
+        }
+
+        .option {
+            background: rgba(255,255,255,0.1);
+            padding: 15px 20px;
+            margin: 10px 0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .option:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateX(5px);
+            border-color: #ffd700;
+        }
+
+        .progress {
+            height: 8px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #ffd700, #ff6b6b);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .result {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .result.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .score-display {
+            font-size: 6em;
+            font-weight: bold;
+            margin: 20px 0;
+            text-shadow: 4px 4px 8px rgba(0,0,0,0.5);
+        }
+
+        .rank-title {
+            font-size: 2.5em;
+            margin: 20px 0;
+            color: #ffd700;
+        }
+
+        .description {
+            font-size: 1.3em;
+            margin: 20px 0;
+            line-height: 1.6;
+        }
+
+        .share-btn, .restart-btn {
+            background: #ffd700;
+            color: #000;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 10px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .share-btn:hover, .restart-btn:hover {
+            transform: scale(1.05);
+            background: #ffed4e;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            opacity: 0.8;
+            font-size: 0.9em;
+        }
+
+        .emoji {
+            font-size: 1.5em;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+            
+            .score-display {
+                font-size: 4em;
+            }
+            
+            .rank-title {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><span class="emoji">💀</span> Degen Risk Calculator <span class="emoji">🚀</span></h1>
+            <p class="subtitle">How reckless is your crypto trading? Let's find out.</p>
+        </div>
+
+        <div class="quiz-container" id="quizContainer">
+            <div class="progress">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            
+            <div id="questions"></div>
+        </div>
+
+        <div class="quiz-container result" id="result">
+            <h2>Your Degen Score</h2>
+            <div class="score-display" id="scoreDisplay">0</div>
+            <div class="rank-title" id="rankTitle"></div>
+            <div class="description" id="description"></div>
+            <div>
+                <button class="share-btn" onclick="shareResult()">📤 Share Your Score</button>
+                <button class="restart-btn" onclick="restart()">🔄 Try Again</button>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Built by an AI agent with Rocky 🐪 | Share your score and tag us!</p>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                q: "How do you research a new token?",
+                options: [
+                    { text: "Read the whitepaper and audit reports", points: 0 },
+                    { text: "Check Twitter for mentions", points: 25 },
+                    { text: "My friend said it's legit", points: 50 },
+                    { text: "Saw a rocket emoji 🚀", points: 100 }
+                ]
+            },
+            {
+                q: "When do you take profits?",
+                options: [
+                    { text: "At my predetermined target", points: 0 },
+                    { text: "When I'm in decent profit", points: 20 },
+                    { text: "When my portfolio turns green", points: 50 },
+                    { text: "What are profits?", points: 100 }
+                ]
+            },
+            {
+                q: "You see 'SAFU' in the token name. You...",
+                options: [
+                    { text: "Run away immediately", points: 0 },
+                    { text: "Do more research first", points: 25 },
+                    { text: "It means safe, right?", points: 75 },
+                    { text: "APE IN 🦍", points: 100 }
+                ]
+            },
+            {
+                q: "Your investment strategy is:",
+                options: [
+                    { text: "75% bluechips, 25% risk", points: 0 },
+                    { text: "50/50 stable and moonshots", points: 30 },
+                    { text: "If it doesn't 10x, why bother?", points: 75 },
+                    { text: "100% into whatever just launched", points: 100 }
+                ]
+            },
+            {
+                q: "How much of your portfolio is in memecoins?",
+                options: [
+                    { text: "0% - I'm here for tech", points: 0 },
+                    { text: "Maybe 10% for fun", points: 25 },
+                    { text: "About half honestly", points: 60 },
+                    { text: "Wait, there are other coins?", points: 100 }
+                ]
+            },
+            {
+                q: "A coin pumps 500% in an hour. You...",
+                options: [
+                    { text: "Avoid it, too risky", points: 0 },
+                    { text: "Watch from the sidelines", points: 20 },
+                    { text: "Buy a small position", points: 60 },
+                    { text: "FOMO in with life savings", points: 100 }
+                ]
+            },
+            {
+                q: "Your stop-loss strategy:",
+                options: [
+                    { text: "Set stops on every trade", points: 0 },
+                    { text: "Mental stops usually", points: 30 },
+                    { text: "Stops are for quitters", points: 70 },
+                    { text: "What's a stop-loss?", points: 100 }
+                ]
+            },
+            {
+                q: "The dev wallet holds 60% of supply. Your move:",
+                options: [
+                    { text: "Hard pass", points: 0 },
+                    { text: "Red flag, skip it", points: 10 },
+                    { text: "They probably won't rug...", points: 60 },
+                    { text: "Early = more upside!", points: 100 }
+                ]
+            },
+            {
+                q: "How do you feel about leverage trading?",
+                options: [
+                    { text: "Never touch it", points: 0 },
+                    { text: "Maybe 2x max", points: 25 },
+                    { text: "10x or go home", points: 75 },
+                    { text: "100x is the only way", points: 100 }
+                ]
+            },
+            {
+                q: "Your biggest trading loss was:",
+                options: [
+                    { text: "Less than 20% of portfolio", points: 0 },
+                    { text: "About half my stack", points: 40 },
+                    { text: "Everything. Multiple times.", points: 80 },
+                    { text: "I don't want to talk about it", points: 100 }
+                ]
+            }
+        ];
+
+        const ranks = [
+            { min: 0, max: 20, title: "Paper Hands 📄", desc: "You're too safe for this market. Your portfolio probably has a retirement plan.", emoji: "📄" },
+            { min: 21, max: 40, title: "Cautious Ape 🐵", desc: "You degen occasionally but still use your brain. Boring, but you'll survive.", emoji: "🐵" },
+            { min: 41, max: 60, title: "Mid-Curve Degen 🎢", desc: "Dangerous territory. You know better but do it anyway. Respect.", emoji: "🎢" },
+            { min: 61, max: 80, title: "Full Send Mode 🚀", desc: "Your risk tolerance is genuinely concerning. Your family asks about you.", emoji: "🚀" },
+            { min: 81, max: 100, title: "Absolute Degen 💀", desc: "You are a danger to yourself and others. Peak crypto right here.", emoji: "💀" }
+        ];
+
+        let currentQuestion = 0;
+        let totalScore = 0;
+
+        function initQuiz() {
+            const container = document.getElementById('questions');
+            questions.forEach((q, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'question' + (index === 0 ? ' active' : '');
+                questionDiv.innerHTML = `
+                    <h3>Question ${index + 1} of ${questions.length}</h3>
+                    <p style="font-size: 1.2em; margin-bottom: 20px;">${q.q}</p>
+                    ${q.options.map((opt, i) => `
+                        <div class="option" onclick="selectOption(${index}, ${opt.points})">
+                            ${opt.text}
+                        </div>
+                    `).join('')}
+                `;
+                container.appendChild(questionDiv);
+            });
+        }
+
+        function selectOption(questionIndex, points) {
+            totalScore += points;
+            currentQuestion++;
+            
+            const allQuestions = document.querySelectorAll('.question');
+            allQuestions[questionIndex].classList.remove('active');
+            
+            if (currentQuestion < questions.length) {
+                allQuestions[currentQuestion].classList.add('active');
+                updateProgress();
+            } else {
+                showResult();
+            }
+        }
+
+        function updateProgress() {
+            const progress = ((currentQuestion) / questions.length) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+
+        function showResult() {
+            document.getElementById('quizContainer').style.display = 'none';
+            const resultDiv = document.getElementById('result');
+            resultDiv.classList.add('active');
+            
+            const rank = ranks.find(r => totalScore >= r.min && totalScore <= r.max);
+            
+            // Animate score
+            let displayScore = 0;
+            const scoreInterval = setInterval(() => {
+                if (displayScore >= totalScore) {
+                    clearInterval(scoreInterval);
+                } else {
+                    displayScore += 2;
+                    document.getElementById('scoreDisplay').textContent = Math.min(displayScore, totalScore);
+                }
+            }, 20);
+            
+            document.getElementById('rankTitle').innerHTML = rank.emoji + ' ' + rank.title;
+            document.getElementById('description').textContent = rank.desc;
+        }
+
+        function shareResult() {
+            const rank = ranks.find(r => totalScore >= r.min && totalScore <= r.max);
+            const text = `I scored ${totalScore}/100 on the Degen Risk Calculator!\n\n${rank.title}\n\nHow reckless are you? 🚀💀\n\nhttps://rockyagent.github.io/degen-calculator\n\n#DegenScore #CryptoTwitter #Solana`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'My Degen Score',
+                    text: text
+                }).catch(() => copyToClipboard(text));
+            } else {
+                copyToClipboard(text);
+            }
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Result copied to clipboard! Paste it on Twitter 🚀');
+            }).catch(() => {
+                alert(`Your score: ${totalScore}/100\n\nShare it on Twitter!`);
+            });
+        }
+
+        function restart() {
+            currentQuestion = 0;
+            totalScore = 0;
+            document.getElementById('result').classList.remove('active');
+            document.getElementById('quizContainer').style.display = 'block';
+            document.getElementById('progressBar').style.width = '0%';
+            
+            const allQuestions = document.querySelectorAll('.question');
+            allQuestions.forEach((q, i) => {
+                q.classList.remove('active');
+                if (i === 0) q.classList.add('active');
+            });
+        }
+
+        // Initialize
+        initQuiz();
+    </script>
+</body>
+</html>
